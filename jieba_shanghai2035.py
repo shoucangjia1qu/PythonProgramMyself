@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from pyecharts import WordCloud
 import jieba.analyse
 
-os.chdir("D:\\mywork\\test")
+os.chdir("D:\\mywork\\test\\word")
 with open("shanghai2035ori.txt","r") as f:
     #f.encoding="utf-8"
     text=f.readlines()
@@ -91,7 +91,51 @@ for char in shanghai:
     
     m+=1
 
+
+
+
+#全篇文章来一个
+strall = ""
+for i in text:
+    i = i.strip()
+    strall+=i
+strall = strall.replace("\t","")
+
+cuts = jieba.lcut(strall)
+words = jieba.analyse.textrank(strall,topK=25,withWeight=True,allowPOS=( 'n'))
+words2 = jieba.analyse.textrank(strall,topK=25,withWeight=True,allowPOS=( 'v'))
+
+#名词图
+print("\n全篇名词图")
+listx = []
+listy = []
+for word,weight in words:
+    cutcount = cuts.count(word)
+    print(word+"出现{}次".format(cutcount),weight)
+    listx.append(word)
+    listy.append(weight*10000)
     
+name = listx
+value = listy
+wordcloud = WordCloud(width=1500, height=1000)
+wordcloud.add("上海2035规划全篇名词图", name, value, word_size_range=[50, 200])
+wordcloud.render('上海2035规划全篇名词图.html')    
+
+#动词图
+print("\n全篇动词图")
+listx = []
+listy = []
+for word2,weight2 in words2:
+    cutcount2 = cuts.count(word2)
+    print(word2+"出现{}次".format(cutcount2),weight2)
+    listx.append(word2)
+    listy.append(weight2*10000)
+    
+name = listx
+value = listy
+wordcloud = WordCloud(width=1500, height=1000)
+wordcloud.add("上海2035规划全篇动词图", name, value, word_size_range=[50, 200])
+wordcloud.render('上海2035规划全篇动词图.html')
 #统计分词数量
 dicts={}
 for i in cuts:
