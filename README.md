@@ -1,8 +1,8 @@
 # PythonProgramMyself
-##2018-8-11
-###用opencv做了个简易版的照相机，并实现了以下功能：（附代码）
-1、调用摄像头实现动态抓拍
-''' python
+## 2018-8-11
+### 用opencv做了个简易版的照相机，并实现了以下功能：（附代码）
+1、调用摄像头实现动态抓拍 <br>
+``` python
 import cv2,os
 #import numpy as np
 from PIL import Image
@@ -17,10 +17,10 @@ while (cap.isOpened()):     #验证是否打开
             cv2.imwrite("catch.jpg",img)  #按下了Z就读入
             break
 cv2.waitKey(500)    #抓拍好后等0.5s
-'''
+```
 
-2、面部识别与保存
-'''python
+2、面部识别与保存<br>
+```python
 #这里首先直接调用了cv2里面CascadeClassifier类的haarcascade_frontalface_default模型
 faceCascade = cv2.CascadeClassifier("D:\\python\\Lib\\site-packages\\cv2\\data\\haarcascade_frontalface_default.xml")
 #模型的相关参数设置
@@ -41,11 +41,11 @@ for x,y,w,h in peopleface:
 
 cv2.imshow('frame',img)
 cv2.imwrite("catchdetect.jpg",img)  #将识别出的人脸图片打开并保存
-'''
+```
 
-3、关闭摄像头和画布
-'''python
+3、关闭摄像头和画布<br>
+```python
 cap.release()
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-'''
+```
