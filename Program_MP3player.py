@@ -9,18 +9,64 @@ import tkinter as tk
 import os, glob
 from pygame import mixer
 
+#定义选择函数
+def choose():
+    global playsong
+    msg.set("\n播放歌曲："+choice.get().split('\\')[-1])
+    playsong=choice.get()
 
+#定义暂停函数
+def pausemp3():
+    mixer.music.pause()
+    msg.set("\n暂停播放{}".format(playsong.split('\\')[-1]))
 
+#定义音量调大函数
+def increase():
+    global volume
+    volume+=0.1
+    if volume>=1:
+        volume=1
+    mixer.music.set_volume(volume)
 
+#定义音量调小函数
+def decrease():
+    global volume
+    volume-=0.1
+    if volume<=0.1:
+        volume=0.1
+    mixer.music.set_volume(volume)
 
+#定义播放函数
+def playmp3():
+    global playsong, preplaysong
+    if playsong==preplaysong:
+        if not mixer.music.get_busy():
+            mixer.music.load(playsong)
+            mixer.music.play(loops=-1)
+        else:
+            mixer.music.unpause()
+        msg.set("\n正在播放：{}".format(playsong.split('\\')[-1]))
+    else:
+        playNewmp3()
+        preplaysong=playsong
+        
+#定义播放新曲函数
+def playNewmp3():
+    global playsong
+    mixer.music.stop()
+    mixer.music.load(playsong)
+    mixer.music.play(loops=-1)
+    msg.set("\n正在播放：{}".format(playsong.split('\\')[-1]))
 
+#定义停止函数
+def stopmp3():
+    mixer.music.stop()
+    msg.set("\n停止播放")
 
-
-
-
-
-
-
+#定义结束函数
+def exitmp3():
+    mixer.music.stop()
+    win.destroy()
 
 
 #对象初始化
@@ -36,7 +82,7 @@ labeltitle.pack()
 frame1 = tk.Frame(win)
 frame1.pack()
 #创建音乐目录
-music_dir = "D:\\mywork\\test\\sounds"
+music_dir = "D:\\mywork\\test\\sounds\\"
 musicfiles = glob.glob(music_dir+"*.mp3")+glob.glob(music_dir+"*.wav")
 
 playsong = preplaysong = ""
