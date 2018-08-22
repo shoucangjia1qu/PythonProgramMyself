@@ -12,8 +12,8 @@ from pygame import mixer
 #定义选择函数
 def choose():
     global playsong
-    msg.set("\n播放歌曲："+choice.get().split('\\')[-1])
     playsong=choice.get()
+    playmp3()       #将选歌设置成点击即播放的功能
 
 #定义暂停函数
 def pausemp3():
@@ -127,5 +127,6 @@ button6.grid(row=0, column=5, padx=5, pady=5)
 win.protocol("WM_DELETE_WINDOW",exitmp3)
 win.mainloop()
 
-
+#%%
+#设置点击即播放的功能
 
