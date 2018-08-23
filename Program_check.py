@@ -6,6 +6,7 @@ Created on Thu Aug 23 10:01:50 2018
 """
 
 import tkinter as tk
+import pandas as pd
 import pymysql
 
 #连接数据库
@@ -46,34 +47,71 @@ def choosetype():                   #获取表名
     tablename = choicetype.get()
     try:
         getmark(tablename,bankname)
+        textmake(markname,mark)
     except:
         print("null")
 
 def choosebank(event):              #获取支行名
     global bankname
     bankname = list_bank.get(list_bank.curselection())
-    try:
-        getmark(tablename,bankname)
-    except:
-        print("null")
+    getmark(tablename,bankname)
+    textmake(markname,mark)
     
-def getmark(tablename,bankname):
-    global markname,mark
-    if tablename=="businesscheck":
-        sql='''select business_mark as 总得分,cus_now as 私行客户数,cus_mark as 客户得分,
-                       aum_now as 私行AUM,aum_mark as AUM得分,aum_now/allaum_now as 私行资产占比,
-                       allaumratio_mark as 资产占比得分 from businesscheck where 2ndbank='{}' and business_date='2018-06-30';'''.format(bankname)
-        markname=('总得分','私行客户数','客户得分','私行AUM','AUM得分','私行资产占比','资产占比得分')
-    cursor.execute(sql)
-    mark = cursor.fetchall()[0]
-    result.set(mark)
-
 def play():
     global markname,mark
     try:
         getmark(tablename,bankname)
+        textmake(markname,mark)
     except:
         print("null")
+
+def getmark(tablename,bankname):
+    global markname,mark,pretablename,df
+    if pretablename!=tablename:
+        if tablename=="businesscheck":
+            sql='''select business_mark as 总得分, 2ndbank as 支行,cus_now as 私行客户数,cus_mark as 客户得分,
+                           aum_now as 私行AUM,aum_mark as AUM得分,aum_now/allaum_now as 私行资产占比,
+                           allaumratio_mark as 资产占比得分 from {} where business_date='2018-06-30';'''.format(tablename)
+        elif tablename=="vbusinesscheck":
+            sql='''select vbusiness_mark as 总得分, 2ndbank as 支行,vcus_now as 至尊客户数,vcus_mark as 客户得分,
+                           vaum_now as 至尊AUM,vaum_mark as AUM得分,vmeet as 至尊约见率,
+                           vmeet_mark as 约见得分 from {} where vbusiness_date='2018-06-30';'''.format(tablename)
+        elif tablename=="relationshipcheck":
+            sql='''select relationship_mark as 总得分,2ndbank as 支行,allpts_now as 全量产品覆盖度,basepts_now as 基础产品覆盖度,
+                           vcard as 私行卡持有率 from {} where relationship_date='2018-06-30';'''.format(tablename)
+        elif tablename=="investcheck":
+            sql='''select business_mark as 总得分,cus_now as 私行客户数,cus_mark as 客户得分,
+                           aum_now as 私行AUM,aum_mark as AUM得分,aum_now/allaum_now as 私行资产占比,
+                           allaumratio_mark as 资产占比得分 from {} where business_date='2018-06-30';'''.format(tablename)
+        elif tablename=="allmark":
+            sql='''select business_mark as 总得分,cus_now as 私行客户数,cus_mark as 客户得分,
+                           aum_now as 私行AUM,aum_mark as AUM得分,aum_now/allaum_now as 私行资产占比,
+                           allaumratio_mark as 资产占比得分 from {} where business_date='2018-06-30';'''.format(tablename)
+        df=pd.read_sql(sql,connect)
+        markname=tuple(df.columns)
+        pretablename=tablename
+    arr=df[df['支行']==bankname].values
+    mark =tuple(map(tuple,arr))[0]
+    
+def textmake(markname,mark):
+    ##设置展示板标签容器(1,1)
+    labeltext = tk.LabelFrame(mainframe,text='评价内容',font=("微软雅黑",10),width=730,height=420)
+    labeltext.grid(row=1,column=1,sticky=tk.NW,padx=30,pady=30)
+    labeltext.grid_propagate(0)
+    ###设置得分项和具体得分
+    for y1 in range(3):
+        for x1 in range(6):
+            m=6*y1+x1
+            if m==0:
+                labelre=tk.Label(labeltext,text="{}: {}".format(markname[m],mark[m]),fg="red",font=("微软雅黑",20))
+                labelre.grid(row=x1, column=y1, padx=50, pady=20)
+            elif m<len(mark):
+                if y1==0:
+                    labelre=tk.Label(labeltext,text="{}: {}".format(markname[m],mark[m]),font=("微软雅黑",14))
+                    labelre.grid(row=x1, column=y1, padx=50, pady=15, sticky=tk.W)
+                else:
+                    labelre=tk.Label(labeltext,text="{}: {}".format(markname[m],mark[m]),font=("微软雅黑",14))
+                    labelre.grid(row=x1+1, column=y1, padx=50, pady=15, sticky=tk.W)
 
 
 #tkinter窗口设置
@@ -81,7 +119,7 @@ mainwin = tk.Tk()
 mainwin.geometry("1080x720")
 mainwin.title("评价查询系统")
 choicetype = tk.StringVar()         #表类型选择变量
-result = tk.StringVar()
+#result = tk.StringVar()
 
 #一、设置标题
 labeltitle = tk.Label(mainwin, text="评价查询系统", fg="red", font=("微软雅黑",16))
@@ -127,34 +165,10 @@ for t in tablenames:
     if (n==1):
         rbtemtype.select()
         tablename = t.split(".")[0]
+        pretablename = ""
     n+=1
 ##--------------------------------------------------------------------------------------##
-    
-##设置展示板标签容器(1,1)
-labeltext = tk.LabelFrame(mainframe,text='评价内容',font=("微软雅黑",10),width=730,height=420)
-labeltext.grid(row=1,column=1,sticky=tk.NW,padx=30,pady=30)
-labeltext.grid_propagate(0)
-###设置得分项和具体得分
 
-labelre=tk.Label(labeltext,textvariable=result,fg="red",font=("微软雅黑",20))
-labelre.grid(row=0, column=0, padx=50, pady=20)
-
-#for y1 in range(2):
-#    for x1 in range(6):
-#        try:
-#            m=6*y1+x1
-#            if m==0:
-#                labelre=tk.Label(labeltext,text="{}: %.3f".format(markname[m])%mark[m],fg="red",font=("微软雅黑",20))
-#                labelre.grid(row=x1, column=y1, padx=50, pady=20)
-#            elif m<len(mark):
-#                if y1==0:
-#                    labelre=tk.Label(labeltext,text="{}: %.3f".format(markname[m])%mark[m],font=("微软雅黑",14))
-#                    labelre.grid(row=x1, column=y1, padx=50, pady=15, sticky=tk.W)
-#                else:
-#                    labelre=tk.Label(labeltext,text="{}: %.3f".format(markname[m])%mark[m],font=("微软雅黑",14))
-#                    labelre.grid(row=x1+1, column=y1, padx=50, pady=15, sticky=tk.W)
-#        except:
-#            print('no')
 
 button1 = tk.Button(mainwin, text="查询", width=8, command=play)
 button1.pack()    
