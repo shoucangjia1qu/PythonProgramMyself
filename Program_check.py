@@ -44,11 +44,12 @@ banklist = cursor.fetchall()
 
 
 
-#设置函数
+#设置动作函数
 def choosetype():                   #获取表名
     global tablename
     tablename = choicetype.get()
     try:
+        resultframe.destroy()
         getmark(tablename,bankname)
         textmake(markname,mark)
     except:
@@ -56,6 +57,7 @@ def choosetype():                   #获取表名
 
 def choosebank(event):              #获取支行名
     global bankname
+    resultframe.destroy()
     bankname = list_bank.get(list_bank.curselection())
     getmark(tablename,bankname)
     textmake(markname,mark)
@@ -63,6 +65,7 @@ def choosebank(event):              #获取支行名
 def play():
     global markname,mark
     try:
+        resultframe.destroy()
         getmark(tablename,bankname)
         textmake(markname,mark)
     except:
@@ -107,11 +110,14 @@ def getmark(tablename,bankname):
 
 
 def textmake(markname,mark):
-    
+    global resultframe
     if tablename != 'allmark':
         ##设置展示板标签容器(1,1)
-        labeltext = tk.LabelFrame(mainframe,text='评价内容',font=("微软雅黑",10),width=730,height=420)
-        labeltext.grid(row=1,column=1,sticky=tk.NW,padx=30,pady=30,columnspan=2)
+        resultframe=tk.Frame(mainframe)
+        resultframe.grid(row=1,column=1,sticky=tk.NW,pady=30)
+        #设置默认标签框架
+        labeltext = tk.LabelFrame(resultframe,text='评价内容',font=("微软雅黑",10),width=730,height=420)
+        labeltext.grid(sticky=tk.NW)
         labeltext.grid_propagate(0)
         ###设置得分项和具体得分
         for y1 in range(3):
@@ -119,33 +125,36 @@ def textmake(markname,mark):
                 m=6*y1+x1
                 if m==0:
                     labelre=tk.Label(labeltext,text="{}: {}".format(markname[m],mark[m]),fg="red",font=("微软雅黑",20))
-                    labelre.grid(row=x1, column=y1, padx=50, pady=20)
+                    labelre.grid(row=x1, column=y1, padx=30, pady=20, sticky=tk.W)
                 elif m<len(mark):
                     if y1==0:
                         labelre=tk.Label(labeltext,text="{}: {}".format(markname[m],mark[m]),font=("微软雅黑",14))
-                        labelre.grid(row=x1, column=y1, padx=50, pady=15, sticky=tk.W)
+                        labelre.grid(row=x1, column=y1, padx=30, pady=15, sticky=tk.W)
                     else:
                         labelre=tk.Label(labeltext,text="{}: {}".format(markname[m],mark[m]),font=("微软雅黑",14))
-                        labelre.grid(row=x1+1, column=y1, padx=50, pady=15, sticky=tk.W)
+                        labelre.grid(row=x1+1, column=y1, padx=30, pady=15, sticky=tk.W)
     else:
-        labeltext = tk.LabelFrame(mainframe,text='评价内容',font=("微软雅黑",10),width=300,height=420)
-        labeltext.grid(row=1,column=1,sticky=tk.NW,padx=30,pady=30)
+        ##设置展示板标签容器(1,1)
+        resultframe=tk.Frame(mainframe)
+        resultframe.grid(row=1,column=1,sticky=tk.NW,pady=30)
+        #设置默认标签框架
+        labeltext = tk.LabelFrame(resultframe,text='评价内容',font=("微软雅黑",10),width=300,height=420,relief=tk.FLAT)
+        labeltext.grid(row=0,column=0,sticky=tk.NW)
         labeltext.grid_propagate(0)
         for y1 in range(3):
             for x1 in range(6):
                 m=6*y1+x1
                 if m==0:
                     labelre=tk.Label(labeltext,text="{}: {}".format(markname[m],mark[m]),fg="red",font=("微软雅黑",20))
-                    labelre.grid(row=x1, column=y1, padx=10, pady=20)
+                    labelre.grid(row=x1, column=y1, padx=30, pady=20,sticky=tk.W)
                 elif m<len(mark):
                     if y1==0:
                         labelre=tk.Label(labeltext,text="{}: {}".format(markname[m],mark[m]),font=("微软雅黑",14))
-                        labelre.grid(row=x1, column=y1, padx=10, pady=15, sticky=tk.W)
+                        labelre.grid(row=x1, column=y1, padx=30, pady=15, sticky=tk.W)
                     else:
                         labelre=tk.Label(labeltext,text="{}: {}".format(markname[m],mark[m]),font=("微软雅黑",14))
-                        labelre.grid(row=x1+1, column=y1, padx=10, pady=15, sticky=tk.W)
-
-        #放图片
+                        labelre.grid(row=x1+1, column=y1, padx=30, pady=15, sticky=tk.W)
+        #调用画布控件
         getpicture()
 
 def getpicture():
@@ -161,18 +170,22 @@ def getpicture():
     plt.thetagrids(angles * 180/np.pi, labels)  # 做标签
     plt.fill(angles, data_radar, facecolor='r', alpha=0.25)# 填充
     plt.ylim(30, 130)
-    canvas =FigureCanvasTkAgg(fig, master=mainframe)
+    canvas =FigureCanvasTkAgg(fig, master=resultframe)
     canvas.show()
-    canvas.get_tk_widget().grid(row=1,column=2,sticky=tk.W)
+    canvas.get_tk_widget().grid(row=0,column=1,pady=30)
     
-    
+
+
+
+
+####################主程序#######################    
     
 #tkinter窗口设置
 mainwin = tk.Tk()
 mainwin.geometry("1080x720")
 mainwin.title("评价查询系统")
 choicetype = tk.StringVar()         #表类型选择变量
-#result = tk.StringVar()
+
 
 #一、设置标题
 labeltitle = tk.Label(mainwin, text="评价查询系统", fg="red", font=("微软雅黑",16))
@@ -182,14 +195,15 @@ labeltitle.pack(pady=20)
 #二、设置主容器
 mainframe = tk.Frame(mainwin)
 mainframe.pack()
+
 ##设置支行标签(0,0)
 labelbank = tk.Label(mainframe, fg='blue',text='请选择支行',font=("微软雅黑",14))
-labelbank.grid(row=0,column=0,sticky=tk.S)
+labelbank.grid(row=0,column=0,sticky=tk.S,padx=30)
 ##--------------------------------------------------------------------------------------##
 
 ##设置支行子容器(1,0)
 framebank = tk.Frame(mainframe)
-framebank.grid(row=1,column=0,pady=25)
+framebank.grid(row=1,column=0,pady=25,padx=30)
 
 ###设置支行列表
 list_bank = tk.Listbox(framebank,font=("微软雅黑",14),height=17)
@@ -207,7 +221,7 @@ roll_bank['command'] = list_bank.yview
 
 ##设置评价标签容器(0,1)
 labeltype = tk.LabelFrame(mainframe,text='评价选项',font=("微软雅黑",10),padx=15)
-labeltype.grid(row=0,column=1,sticky=tk.N,padx=30,columnspan=2)
+labeltype.grid(row=0,column=1,sticky=tk.NW,columnspan=2)
 
 ###设置评价类型选项
 n=1
@@ -222,16 +236,22 @@ for t in tablenames:
     n+=1
 ##--------------------------------------------------------------------------------------##
 ##设置展示板标签容器(1,1)
-labeltext = tk.LabelFrame(mainframe,text='评价内容',font=("微软雅黑",10),width=730,height=420)
-labeltext.grid(row=1,column=1,sticky=tk.NW,padx=30,pady=30)
+resultframe=tk.Frame(mainframe)
+resultframe.grid(row=1,column=1,sticky=tk.NW,pady=30)
+#设置默认标签框架
+labeltext = tk.LabelFrame(resultframe,text='评价内容',font=("微软雅黑",10),width=730,height=420)
+labeltext.grid(sticky=tk.NW)
 labeltext.grid_propagate(0)
 
 
-
+#二、设置特殊按钮
 
 
 button1 = tk.Button(mainwin, text="查询", width=8, command=play)
 button1.pack()    
+
+
+
 
 mainwin.mainloop()
 
