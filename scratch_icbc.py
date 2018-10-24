@@ -19,46 +19,48 @@ browser = webdriver.Chrome()
 browser.get(url)
 time.sleep(30)
 browser.find_element_by_xpath('//*[@id="moreproducts"]').click()
-curr_html = browser.page_source
+#进入嵌套框架
+browser.switch_to_frame('perbank-content-frame')
+browser.switch_to_frame('content-frame')
 
-name = 0
-profit = 0
-money = 0
-data = 0
-buytime = 0
-
-bs = BeautifulSoup(curr_html,"html.parser")
-tables = bs.select('#licai')
-contents = tables[0].find_all("li")
-for row in contents:
-    fs = row.find_all('div')
-    name=(fs[0].text.strip())
-    profit=(fs[3].text.strip().split()[0])
-    money=(fs[4].text.strip().split())
-    data=(fs[5].text.strip().split())
-    buytime=(fs[6].text.strip())
-    if os.path.exists("icbc.txt"):
-        with open("icbc.txt","r") as f:
-            icbc = f.read()
-        with open("icbc.txt","w") as f:
-            try:
-                f.write(icbc+"\n"+name+","+profit+","+str(money[0])+":"+str(money[1])+","
-                        +str(data[0])+":"+str(data[1])+","+buytime)
-            except:
-                print("error")
-                f.write(str(icbc))
-    else:
-        with open("icbc.txt","w") as f:
-            f.write(name+","+profit+","+str(money[0])+":"+str(money[1])+","
-                        +str(data[0])+":"+str(data[1])+","+buytime)
-            print("文件已写入")
-
-time.sleep(10)
-browser.find_element_by_xpath('//*[@id="pageturn"]/ul/li[4]').click()
-time.sleep(10)
-
-#except:
-#    print("结束")
+for i in range(10):
+    name = 0
+    profit = 0
+    money = 0
+    data = 0
+    buytime = 0
+    curr_html = browser.page_source
+    bs = BeautifulSoup(curr_html,"html.parser")
+    table = bs.select('#datatableModel')[0]
+    contents = table.select(".ebdp-pc4promote-circularcontainer")
+    for row in contents:
+        name = row.find_all("a")[0].text
+        buytime = row.select(".ebdp-pc4promote-circularcontainer-text1")[0].text
+        profit=row.select(".ebdp-pc4promote-doublelabel")[0].text.strip()
+        money=row.select(".ebdp-pc4promote-doublelabel")[1].text.strip()
+        data=row.select(".ebdp-pc4promote-doublelabel")[2].text.strip()
+        if os.path.exists("icbc.txt"):
+            with open("icbc.txt","r") as f:
+                icbc = f.read()
+            with open("icbc.txt","w") as f:
+                try:
+                    f.write(icbc+"\n"+name+","+profit+","+money+","
+                            +data+","+buytime)
+                except:
+                    print("error")
+                    f.write(str(icbc))
+        else:
+            with open("icbc.txt","w") as f:
+                f.write(name+","+profit+","+money+","
+                            +data+","+buytime)
+                print("文件已写入")
+    
+    time.sleep(5)
+    try:
+        browser.find_element_by_xpath('//*[@id="pageturn"]/ul/li[4]').click()
+    except:
+        print("结束")
+        break
 
 browser.close()
 
